@@ -102,7 +102,7 @@ resource "aws_kms_key" "alb_logs" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = { AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root" }
       Action = [
         "kms:Encrypt",
