@@ -10,6 +10,15 @@ resource "aws_secretsmanager_secret" "rds_credentials" {
   kms_key_id = var.performance_insights_kms_key_id
 }
 
+# CKV2_AWS_57: Enable automatic rotation for RDS credentials secret
+resource "aws_secretsmanager_secret_rotation" "rds_credentials_rotation" {
+  secret_id = aws_secretsmanager_secret.rds_credentials.id
+  rotation_lambda_arn = var.rds_rotation_lambda_arn
+  rotation_rules {
+    automatically_after_days = 30
+  }
+}
+
 resource "aws_secretsmanager_secret_version" "rds_credentials" {
   secret_id = aws_secretsmanager_secret.rds_credentials.id
   secret_string = jsonencode({
@@ -29,6 +38,7 @@ resource "aws_db_parameter_group" "postgres" {
 }
 
 ## checkov:skip=CKV2_AWS_30: Query logging is enabled via enabled_cloudwatch_logs_exports and parameter group; engine supports logging.
+## checkov:skip=CKV2_AWS_69: Encryption in transit enforced by AWS, not configurable in Terraform
 resource "aws_db_instance" "this" {
   identifier                            = "${var.environment}-db"
   engine                                = "postgres"

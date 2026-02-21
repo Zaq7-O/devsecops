@@ -75,7 +75,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
       - name: Scan for secrets with gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -119,7 +118,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Infracost breakdown
-        uses: infracost/actions@v4
+        uses: infracost/actions@latest
         with:
           path: ./terraform
           format: table
