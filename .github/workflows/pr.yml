@@ -1,36 +1,44 @@
 name: PR Workflow
 
-permissions:
-   pull_request:
-     types: [opened, synchronize, reopened]
-
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
   push:
     branches:
       - main
+
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   terraform-checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
+
       - name: Terraform fmt
         run: terraform fmt -check -recursive
         working-directory: ./terraform
+
       - name: Terraform init
         run: terraform init -backend=false
         working-directory: ./terraform
+
       - name: Terraform validate
         run: terraform validate
         working-directory: ./terraform
+
       - name: Setup tflint
         uses: terraform-linters/setup-tflint@v4
+
       - name: Run tflint
         run: tflint
         working-directory: ./terraform
+
       - name: Run checkov
         uses: bridgecrewio/checkov-action@v12
         with:
@@ -40,6 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Lint Dockerfile with hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
@@ -49,8 +58,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Build Docker image
         run: docker build -t app-image ./app
+
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@0.20.0
         with:
@@ -60,11 +71,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Run npm audit
         run: |
           cd app
           npm ci
           npm audit --audit-level=high || true
+
       - name: Trivy FS scan
         uses: aquasecurity/trivy-action@0.20.0
         with:
@@ -73,10 +86,13 @@ jobs:
 
   secret-detection:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Scan for secrets with gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -94,9 +110,14 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 5
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Build and start app
         run: |
           docker build -t app-image ./app
@@ -107,9 +128,13 @@ jobs:
             -e DB_NAME=appdb \
             -e DB_PORT=5432 \
             -p 3000:3000 app-image
+
       - name: Wait for app
         run: |
-          for i in {1..10}; do curl -f http://localhost:3000/api/db-check && break || sleep 3; done
+          for i in {1..10}; do
+            curl -f http://localhost:3000/api/db-check && break || sleep 3;
+          done
+
       - name: Stop containers
         run: |
           docker stop app || true
@@ -119,6 +144,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Infracost breakdown
         uses: infracost/actions@v2
         with:
