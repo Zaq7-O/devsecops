@@ -119,7 +119,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Infracost breakdown
-        uses: infracost/actions@v4.0.0
+        uses: infracost/actions@v4
         with:
           path: ./terraform
           format: table
