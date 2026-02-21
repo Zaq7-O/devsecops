@@ -1,5 +1,9 @@
 name: Merge Workflow
 
+permissions:
+  contents: read
+  packages: write
+
 on:
   push:
     branches: [main]
@@ -78,9 +82,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Scan for secrets with gitleaks
         uses: gitleaks/gitleaks-action@v2
-        with:
-          scan-paths: .
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   docker-compose-test:
     runs-on: ubuntu-latest
