@@ -25,8 +25,9 @@ resource "aws_db_instance" "this" {
   performance_insights_kms_key_id       = var.performance_insights_kms_key_id
   monitoring_interval                   = 60
   monitoring_role_arn                   = aws_iam_role.rds_monitoring.arn
-  enabled_cloudwatch_logs_exports       = ["postgresql"]
+  enabled_cloudwatch_logs_exports       = ["postgresql", "upgrade"]
   skip_final_snapshot                   = false
+  copy_tags_to_snapshot                 = true
   tags = {
     Environment = var.environment
   }
