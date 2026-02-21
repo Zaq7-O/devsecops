@@ -98,4 +98,20 @@ Database connection successful!
 
 - All infrastructure code is validated locally—no terraform apply has been executed.
 - Public ALB is the only intentional exception to tfsec rules; documented inline.
-- All other security and quality checks pass with no critical/high findings.
+
+## Workflow Compatibility Note
+
+**gitleaks-action@v2 usage:**
+
+The GitHub Actions workflows use `gitleaks-action@v2` for secret scanning. As of early 2026, the correct input for specifying files or directories to scan is `scan-paths` (not `scan-args`).
+
+If you update or troubleshoot the workflow, ensure the gitleaks step uses:
+
+```yaml
+      - uses: gitleaks/gitleaks-action@v2
+        with:
+          scan-paths: .
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+See [gitleaks-action documentation](https://github.com/gitleaks/gitleaks-action) for details.
