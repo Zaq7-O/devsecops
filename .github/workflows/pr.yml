@@ -78,6 +78,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Scan for secrets with gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -115,3 +117,15 @@ jobs:
         run: |
           docker stop app || true
           docker rm app || true
+
+  infracost:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Infracost breakdown
+        uses: infracost/actions@v4
+        with:
+          path: ./terraform
+          format: table
+          show-skipped: true
+          usage-file: infracost-usage.yml

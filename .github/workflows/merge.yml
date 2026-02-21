@@ -34,7 +34,7 @@ jobs:
         with:
           directory: ./terraform
       - name: Infracost breakdown
-        uses: infracost/actions@v3
+        uses: infracost/actions@v4
         with:
           path: ./terraform
           format: table
@@ -121,6 +121,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build Docker image
-        run: docker build -t ghcr.io/${{ github.repository }}/app:${{ github.sha }} -t ghcr.io/${{ github.repository }}/app:latest ./app
+        run: |
+          REPO="ghcr.io/${{ github.repository }}"
+          REPO_LC=$(echo "$REPO" | tr '[:upper:]' '[:lower:]')
+          docker build -t "$REPO_LC/app:${{ github.sha }}" -t "$REPO_LC/app:latest" ./app
       - name: Push Docker image
-        run: docker push ghcr.io/${{ github.repository }}/app --all-tags
+        run: |
+          REPO="ghcr.io/${{ github.repository }}"
+          REPO_LC=$(echo "$REPO" | tr '[:upper:]' '[:lower:]')
+          docker push "$REPO_LC/app" --all-tags
