@@ -3,7 +3,32 @@ resource "aws_db_subnet_group" "this" {
   subnet_ids = var.subnet_ids
 }
 
-## checkov:skip=CKV2_AWS_30: Query logging is enabled via enabled_cloudwatch_logs_exports; engine supports logging.
+# Store RDS credentials in AWS Secrets Manager
+## checkov:skip=CKV2_AWS_57: Secret rotation not enabled for demo; enable in production with Lambda rotation function.
+resource "aws_secretsmanager_secret" "rds_credentials" {
+  name       = "${var.environment}-rds-credentials"
+  kms_key_id = var.performance_insights_kms_key_id
+}
+
+resource "aws_secretsmanager_secret_version" "rds_credentials" {
+  secret_id = aws_secretsmanager_secret.rds_credentials.id
+  secret_string = jsonencode({
+    username = var.db_username
+    password = var.db_password
+  })
+}
+
+resource "aws_db_parameter_group" "postgres" {
+  name   = "${var.environment}-pg"
+  family = "postgres15"
+
+  parameter {
+    name  = "log_statement"
+    value = "all"
+  }
+}
+
+## checkov:skip=CKV2_AWS_30: Query logging is enabled via enabled_cloudwatch_logs_exports and parameter group; engine supports logging.
 resource "aws_db_instance" "this" {
   identifier                            = "${var.environment}-db"
   engine                                = "postgres"
@@ -29,6 +54,7 @@ resource "aws_db_instance" "this" {
   enabled_cloudwatch_logs_exports       = ["postgresql", "upgrade"]
   skip_final_snapshot                   = false
   copy_tags_to_snapshot                 = true
+  parameter_group_name                  = aws_db_parameter_group.postgres.name
   tags = {
     Environment = var.environment
   }
@@ -52,19 +78,4 @@ resource "aws_iam_role" "rds_monitoring" {
 resource "aws_iam_role_policy_attachment" "rds_monitoring" {
   role       = aws_iam_role.rds_monitoring.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
-}
-
-# Store RDS credentials in AWS Secrets Manager
-## checkov:skip=CKV2_AWS_57: Secret rotation not enabled for demo; enable in production with Lambda rotation function.
-resource "aws_secretsmanager_secret" "rds_credentials" {
-  name       = "${var.environment}-rds-credentials"
-  kms_key_id = var.performance_insights_kms_key_id
-}
-
-resource "aws_secretsmanager_secret_version" "rds_credentials" {
-  secret_id = aws_secretsmanager_secret.rds_credentials.id
-  secret_string = jsonencode({
-    username = var.db_username
-    password = var.db_password
-  })
 }
