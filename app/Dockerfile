@@ -6,29 +6,29 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Stage 2 - Production image
+# Stage 2 - Production image, run as non-root
 FROM node:20.11.1-alpine
 WORKDIR /app
 
-# Non-root user
+# Create non-root user
 RUN addgroup -S nodegroup && adduser -S nodeuser -G nodegroup
 
-# Install curl (pin version to satisfy DL3018)
-  # Install curl for HEALTHCHECK
-  RUN apk add --no-cache curl
+# Install required package (wget) pinned to version
+RUN apk add --no-cache wget=1.21.4-r0
 
-# Copy built app
+# Copy build artifacts
 COPY --from=builder /app ./
 
-# Switch to non-root
+# Run as non-root
 USER nodeuser
 
-# Expose port
+# Expose app port
 EXPOSE 3000
 
-# Docker HEALTHCHECK for Checkov CKV_DOCKER_2
+# Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:3000/api/db-check || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/db-check || exit 1
 
-# Start app (JSON form for DL3025)
+# Start app
 CMD ["npm", "start"]
+ 
