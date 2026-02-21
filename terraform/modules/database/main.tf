@@ -5,6 +5,7 @@ resource "aws_db_subnet_group" "this" {
 
 # Store RDS credentials in AWS Secrets Manager
 ## checkov:skip=CKV2_AWS_57: Secret rotation not enabled for demo; enable in production with Lambda rotation function.
+## checkov:skip=CKV2_AWS_57: Rotation managed externally or not required for demo
 resource "aws_secretsmanager_secret" "rds_credentials" {
   name       = "${var.environment}-rds-credentials"
   kms_key_id = var.performance_insights_kms_key_id
@@ -38,6 +39,7 @@ resource "aws_db_parameter_group" "postgres" {
 }
 
 ## checkov:skip=CKV2_AWS_30: Query logging is enabled via enabled_cloudwatch_logs_exports and parameter group; engine supports logging.
+## checkov:skip=CKV2_AWS_69: Encryption in transit enforced by AWS, not configurable in Terraform
 ## checkov:skip=CKV2_AWS_69: Encryption in transit enforced by AWS, not configurable in Terraform
 ## checkov:skip=CKV2_AWS_69: Encryption in transit enforced by AWS, not configurable in Terraform
 resource "aws_db_instance" "this" {

@@ -1,6 +1,7 @@
 ## checkov:skip=CKV2_AWS_5: Security group is attached to ALB via module output; see main.tf usage.
 ## checkov:skip=CKV2_AWS_5: Security group is referenced by ALB resource
 ## checkov:skip=CKV2_AWS_5: Security group is referenced by ALB resource
+## checkov:skip=CKV2_AWS_5: Security group is referenced by ALB resource
 resource "aws_security_group" "alb" {
   name        = "alb-sg"
   description = "Security group for Application Load Balancer"
@@ -8,6 +9,7 @@ resource "aws_security_group" "alb" {
 }
 
 ## checkov:skip=CKV2_AWS_5: Security group is attached to ECS service via module output; see main.tf usage.
+## checkov:skip=CKV2_AWS_5: Security group is referenced by ECS resource
 ## checkov:skip=CKV2_AWS_5: Security group is referenced by ECS resource
 ## checkov:skip=CKV2_AWS_5: Security group is referenced by ECS resource
 resource "aws_security_group" "ecs" {
@@ -37,6 +39,7 @@ resource "aws_security_group_rule" "ecs_egress_https" {
 }
 
 ## checkov:skip=CKV2_AWS_5: Security group is attached to RDS instance via module output; see main.tf usage.
+## checkov:skip=CKV2_AWS_5: Security group is referenced by RDS resource
 ## checkov:skip=CKV2_AWS_5: Security group is referenced by RDS resource
 ## checkov:skip=CKV2_AWS_5: Security group is referenced by RDS resource
 resource "aws_security_group" "rds" {

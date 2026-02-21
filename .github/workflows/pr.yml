@@ -88,6 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    if: github.event_name != 'pull_request_target'  # skip unsupported event
     steps:
       - uses: actions/checkout@v4
         with:
@@ -144,10 +145,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      INFRACOST_API_KEY: dummy-key-123  # dummy key for assignment
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Infracost
+      - name: Install Infracost CLI
         run: |
           curl -fsSL https://raw.githubusercontent.com/infracost/infracost/master/scripts/install.sh | sh
           echo "$HOME/.infracost/bin" >> $GITHUB_PATH

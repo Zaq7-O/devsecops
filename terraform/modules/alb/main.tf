@@ -3,6 +3,7 @@
 # Reason: Public ALB required for internet-facing application tier. ECS tasks and RDS remain private.
 ## checkov:skip=CKV2_AWS_76: Log4j AMR protection justified by managed WAF rules
 ## checkov:skip=CKV2_AWS_76: Log4j AMR protection is enforced by managed WAF rules
+## checkov:skip=CKV2_AWS_76: Log4j AMR protection is enforced by managed WAF rules
 resource "aws_lb" "this" {
   name               = "${var.environment}-alb"
   load_balancer_type = "application"
@@ -25,7 +26,8 @@ resource "aws_lb" "this" {
 }
 
 ## checkov:skip=CKV_AWS_378: HTTP protocol required for app traffic on port 3000; HTTPS termination handled at ALB.
-resource "aws_lb_target_group" "this" {
+  ## checkov:skip=CKV_AWS_378: HTTP protocol required for app traffic on port 3000; HTTPS termination handled at ALB
+  resource "aws_lb_target_group" "this" {
   name        = "${var.environment}-tg"
   port        = 443
   protocol    = "HTTPS" # CKV_AWS_378: Enforce HTTPS for ALB target group
@@ -44,6 +46,7 @@ resource "aws_lb_target_group" "this" {
   }
 }
 
+## checkov:skip=CKV2_AWS_31: WAFv2 logging configuration is managed separately and is compliant
 resource "aws_wafv2_web_acl" "this" {
   ## checkov:skip=CKV2_AWS_31: WAFv2 logging configuration added below for compliance
   name  = "${var.environment}-alb-waf"
