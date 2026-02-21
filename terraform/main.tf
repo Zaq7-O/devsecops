@@ -1,8 +1,8 @@
 module "networking" {
-  source      = "./modules/networking"
-  vpc_id      = var.vpc_id
-  environment = var.environment
-  rds_cidr    = var.private_subnet_cidr
+  source               = "./modules/networking"
+  vpc_id               = var.vpc_id
+  environment          = var.environment
+  rds_cidr             = var.private_subnet_cidr
   s3_vpc_endpoint_cidr = var.s3_vpc_endpoint_cidr
 }
 

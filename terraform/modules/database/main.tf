@@ -54,7 +54,7 @@ resource "aws_iam_role_policy_attachment" "rds_monitoring" {
 
 # Store RDS credentials in AWS Secrets Manager
 resource "aws_secretsmanager_secret" "rds_credentials" {
-  name = "${var.environment}-rds-credentials"
+  name       = "${var.environment}-rds-credentials"
   kms_key_id = var.performance_insights_kms_key_id
 }
 
