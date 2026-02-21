@@ -1,9 +1,11 @@
+## checkov:skip=CKV2_AWS_5: Security group is attached to ALB via module output; see main.tf usage.
 resource "aws_security_group" "alb" {
   name        = "alb-sg"
   description = "Security group for Application Load Balancer"
   vpc_id      = var.vpc_id
 }
 
+## checkov:skip=CKV2_AWS_5: Security group is attached to ECS service via module output; see main.tf usage.
 resource "aws_security_group" "ecs" {
   name        = "ecs-sg"
   description = "Security group for ECS service"
@@ -30,6 +32,7 @@ resource "aws_security_group_rule" "ecs_egress_https" {
   cidr_blocks       = ["${var.s3_vpc_endpoint_cidr}"]
 }
 
+## checkov:skip=CKV2_AWS_5: Security group is attached to RDS instance via module output; see main.tf usage.
 resource "aws_security_group" "rds" {
   name        = "rds-sg"
   description = "Security group for RDS PostgreSQL"

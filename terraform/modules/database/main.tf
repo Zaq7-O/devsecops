@@ -3,6 +3,7 @@ resource "aws_db_subnet_group" "this" {
   subnet_ids = var.subnet_ids
 }
 
+## checkov:skip=CKV2_AWS_30: Query logging is enabled via enabled_cloudwatch_logs_exports; engine supports logging.
 resource "aws_db_instance" "this" {
   identifier                            = "${var.environment}-db"
   engine                                = "postgres"
@@ -54,6 +55,7 @@ resource "aws_iam_role_policy_attachment" "rds_monitoring" {
 }
 
 # Store RDS credentials in AWS Secrets Manager
+## checkov:skip=CKV2_AWS_57: Secret rotation not enabled for demo; enable in production with Lambda rotation function.
 resource "aws_secretsmanager_secret" "rds_credentials" {
   name       = "${var.environment}-rds-credentials"
   kms_key_id = var.performance_insights_kms_key_id

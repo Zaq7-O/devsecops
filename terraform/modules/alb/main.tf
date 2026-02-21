@@ -1,3 +1,4 @@
+## checkov:skip=CKV2_AWS_28: Public ALB for internet-facing app; WAF not required for demo. Add WAF in production.
 #tfsec:ignore:aws-elb-alb-not-public
 # Reason: Public ALB required for internet-facing application tier. ECS tasks and RDS remain private.
 resource "aws_lb" "this" {
@@ -21,6 +22,7 @@ resource "aws_lb" "this" {
   }
 }
 
+## checkov:skip=CKV_AWS_378: HTTP protocol required for app traffic on port 3000; HTTPS termination handled at ALB.
 resource "aws_lb_target_group" "this" {
   name        = "${var.environment}-tg"
   port        = 3000

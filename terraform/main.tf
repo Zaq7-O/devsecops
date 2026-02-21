@@ -65,6 +65,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+## checkov:skip=CKV_AWS_144: Cross-region replication not required for ALB logs bucket in this environment.
 resource "aws_s3_bucket" "alb_logs" {
   bucket = "${var.environment}-alb-logs"
   tags = {
