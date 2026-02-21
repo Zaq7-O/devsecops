@@ -34,7 +34,7 @@ jobs:
         with:
           directory: ./terraform
       - name: Infracost breakdown
-        uses: infracost/actions@v4
+        uses: infracost/actions@v4.0.0
         with:
           path: ./terraform
           format: table
