@@ -9,11 +9,12 @@ module "networking" {
 module "alb" {
   source = "./modules/alb"
 
-  environment           = var.environment
-  subnet_ids            = var.public_subnet_ids
-  alb_security_group_id = module.networking.alb_sg_id
-  alb_logs_bucket       = aws_s3_bucket.alb_logs.bucket
-  vpc_id                = module.networking.vpc_id
+  environment              = var.environment
+  subnet_ids               = var.public_subnet_ids
+  alb_security_group_id    = module.networking.alb_sg_id
+  alb_logs_bucket          = aws_s3_bucket.alb_logs.bucket
+  vpc_id                   = module.networking.vpc_id
+  waf_logs_destination_arn = "arn:aws:logs:us-east-1:123456789012:log-group:waf-logs" # TODO: Replace with your actual log destination ARN
 }
 
 module "database" {
@@ -25,6 +26,7 @@ module "database" {
   db_username                     = var.db_username
   db_password                     = var.db_password
   performance_insights_kms_key_id = var.performance_insights_kms_key_id
+  rds_rotation_lambda_arn         = "arn:aws:lambda:us-east-1:123456789012:function:rds-rotation-lambda" # TODO: Replace with your actual Lambda ARN
 }
 
 module "ecs" {

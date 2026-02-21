@@ -45,10 +45,6 @@ resource "aws_lb_target_group" "this" {
 
 resource "aws_wafv2_web_acl" "this" {
   ## checkov:skip=CKV2_AWS_31: WAFv2 logging configuration added below for compliance
-  resource "aws_wafv2_web_acl_logging_configuration" "this" {
-    resource_arn = aws_wafv2_web_acl.this.arn
-    log_destination_configs = [var.waf_logs_destination_arn]
-  }
   name  = "${var.environment}-alb-waf"
   scope = "REGIONAL"
 
@@ -61,22 +57,18 @@ resource "aws_wafv2_web_acl" "this" {
     metric_name                = "${var.environment}-alb-waf"
     sampled_requests_enabled   = true
   }
-
   rule {
     name     = "AWSManagedCommonRules"
     priority = 1
-
     override_action {
       none {}
     }
-
     statement {
       managed_rule_group_statement {
         name        = "AWSManagedRulesCommonRuleSet"
         vendor_name = "AWS"
       }
     }
-
     visibility_config {
       cloudwatch_metrics_enabled = true
       metric_name                = "commonRules"
@@ -87,24 +79,27 @@ resource "aws_wafv2_web_acl" "this" {
   rule {
     name     = "AWSManagedKnownBadInputs"
     priority = 2
-
     override_action {
       none {}
     }
-
     statement {
       managed_rule_group_statement {
         name        = "AWSManagedRulesKnownBadInputsRuleSet"
         vendor_name = "AWS"
       }
     }
-
     visibility_config {
       cloudwatch_metrics_enabled = true
       metric_name                = "knownBadInputs"
       sampled_requests_enabled   = true
     }
   }
+}
+
+# WAFv2 logging configuration must be outside the web_acl resource
+resource "aws_wafv2_web_acl_logging_configuration" "this" {
+  resource_arn            = aws_wafv2_web_acl.this.arn
+  log_destination_configs = [var.waf_logs_destination_arn]
 }
 
 resource "aws_wafv2_web_acl_association" "this" {

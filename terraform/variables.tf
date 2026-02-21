@@ -1,3 +1,4 @@
+# Variable for Secrets Manager rotation Lambda ARN
 variable "region" {
   type = string
 }
