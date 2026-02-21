@@ -1,17 +1,16 @@
 name: PR Workflow
 
+permissions:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
 on:
   pull_request:
   push:
     branches:
       - main
 
-permissions:
-  contents: read
-  pull_request: write
-
 jobs:
-
   terraform-checks:
     runs-on: ubuntu-latest
     steps:
@@ -72,14 +71,8 @@ jobs:
           scan-type: fs
           scan-ref: ./app
 
-  secret-detection:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Skip Gitleaks for assignment
-        run: echo "Skipping secret detection (assignment workaround)"
+# ===== Option 1: skip gitleaks entirely =====
+# secret-detection job removed to avoid pull_request_target issue
 
   docker-compose-test:
     runs-on: ubuntu-latest
@@ -114,9 +107,5 @@ jobs:
           docker stop app || true
           docker rm app || true
 
-  infracost:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Skip Infracost (no API key)
-        run: echo "Skipping Infracost scan for assignment"
+# ===== Infracost skipped since no API key =====
+# infracost job removed
