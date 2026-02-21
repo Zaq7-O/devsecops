@@ -1,23 +1,16 @@
-# Use Node.js 18 LTS (Long Term Support) version
-FROM node:18-alpine
-
-# Set working directory
+# Stage 1 - Install dependencies and build
+FROM node:20.11.1-alpine AS builder
 WORKDIR /app
-
-# Copy package.json and package-lock.json
 COPY package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy all files
+RUN npm ci
 COPY . .
-
-# Build the Next.js application
 RUN npm run build
 
-# Expose the port the app runs on
+# Stage 2 - Production image, run as non-root
+FROM node:20.11.1-alpine
+WORKDIR /app
+RUN addgroup -S nodegroup && adduser -S nodeuser -G nodegroup
+COPY --from=builder /app ./
+USER nodeuser
 EXPOSE 3000
-
-# Start the application
 CMD ["npm", "start"]
