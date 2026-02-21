@@ -10,8 +10,8 @@ RUN npm run build
 FROM node:20.11.1-alpine
 WORKDIR /app
 
-# Install wget for healthcheck
-RUN apk add --no-cache wget
+# Pin wget version for reproducible builds
+RUN apk add --no-cache wget=1.21.4-r0
 
 # Create non-root user
 RUN addgroup -S nodegroup && adduser -S nodeuser -G nodegroup
