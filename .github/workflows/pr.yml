@@ -146,7 +146,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    continue-on-error: true  # <- makes the job not fail
+    continue-on-error: true  # <- safely skip Infracost without API key
     steps:
       - uses: actions/checkout@v4
 
