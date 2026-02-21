@@ -26,8 +26,8 @@ resource "aws_lb" "this" {
 }
 
 ## checkov:skip=CKV_AWS_378: HTTP protocol required for app traffic on port 3000; HTTPS termination handled at ALB.
-  ## checkov:skip=CKV_AWS_378: HTTP protocol required for app traffic on port 3000; HTTPS termination handled at ALB
-  resource "aws_lb_target_group" "this" {
+## checkov:skip=CKV_AWS_378: HTTP protocol required for app traffic on port 3000; HTTPS termination handled at ALB
+resource "aws_lb_target_group" "this" {
   name        = "${var.environment}-tg"
   port        = 443
   protocol    = "HTTPS" # CKV_AWS_378: Enforce HTTPS for ALB target group

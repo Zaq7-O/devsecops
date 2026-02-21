@@ -10,20 +10,24 @@ RUN npm run build
 FROM node:20.11.1-alpine
 WORKDIR /app
 
-# Pin wget version for reproducible builds
-RUN apk add --no-cache wget=1.21.4-r0
-
-# Create non-root user
+# Add non-root user
 RUN addgroup -S nodegroup && adduser -S nodeuser -G nodegroup
 
+# Install curl (pinned version) for HEALTHCHECK
+RUN apk add --no-cache curl=8.2.1-r0
+
+# Copy built app from builder
 COPY --from=builder /app ./
 
-ENV NODE_ENV=production
-
+# Switch to non-root
 USER nodeuser
+
+# Expose app port
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/db-check || exit 1
+# Add proper HEALTHCHECK for Checkov
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:3000/api/db-check || exit 1
 
-CMD ["npm", "start"]
+# Start the app
+CMD ["npm", "start"
