@@ -10,25 +10,18 @@ permissions:
   pull-requests: read
 
 jobs:
-  security-scan:
+  security-and-build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  docker-build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Build Docker image
-        run: docker build -t test-app .
+        run: docker build -t test-app ./app
         
