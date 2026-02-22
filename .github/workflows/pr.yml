@@ -1,31 +1,28 @@
-name: PR Workflow
+name: CI
 
 on:
   push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
 
 permissions:
   contents: read
-  pull-requests: read
 
 jobs:
-  build-and-scan:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Run Gitleaks (do not fail build)
+      - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker image
-        run: docker build -t test-app ./app
+        run: docker build -t ghcr.io/zaq7-o/devsecops/app:${{ github.sha }} -t ghcr.io/zaq7-o/devsecops/app:latest ./app
         
