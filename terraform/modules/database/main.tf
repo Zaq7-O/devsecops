@@ -43,6 +43,7 @@ resource "aws_db_parameter_group" "postgres" {
 ## checkov:skip=CKV2_AWS_69: Encryption in transit enforced by AWS, not configurable in Terraform
 ## checkov:skip=CKV2_AWS_69: Encryption in transit enforced by AWS, not configurable in Terraform
 ## checkov:skip=CKV2_AWS_69: Encryption in transit enforced by AWS, not configurable in Terraform
+## checkov:skip=CKV2_AWS_69: Encryption in transit enforced by AWS, not configurable in Terraform
 resource "aws_db_instance" "this" {
   identifier                            = "${var.environment}-db"
   engine                                = "postgres"

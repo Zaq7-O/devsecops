@@ -6,6 +6,7 @@
 ## checkov:skip=CKV2_AWS_76: Log4j AMR protection is enforced by managed WAF rules
 ## checkov:skip=CKV2_AWS_76: Log4j AMR protection is enforced by managed WAF rules
 ## checkov:skip=CKV2_AWS_76: Log4j AMR protection is enforced by managed WAF rules
+## checkov:skip=CKV2_AWS_76: Log4j AMR protection is enforced by managed WAF rules
 resource "aws_lb" "this" {
   name               = "${var.environment}-alb"
   load_balancer_type = "application"
