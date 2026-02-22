@@ -13,4 +13,11 @@ RUN addgroup -S nodegroup && adduser -S nodeuser -G nodegroup
 COPY --from=builder /app ./
 USER nodeuser
 EXPOSE 3000
+
+# Add healthcheck (curl)
+USER root
+RUN apk add --no-cache curl
+USER nodeuser
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \n  CMD curl -fsS http://localhost:3000/ || exit 1
+
 CMD ["npm", "start"]
