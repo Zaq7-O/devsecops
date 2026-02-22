@@ -10,13 +10,14 @@ permissions:
   pull-requests: read
 
 jobs:
-  security-and-build:
+  build-and-scan:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Run Gitleaks
+      - name: Run Gitleaks (do not fail build)
         uses: gitleaks/gitleaks-action@v2
         continue-on-error: true
         env:

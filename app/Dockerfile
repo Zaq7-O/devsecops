@@ -1,26 +1,30 @@
-# Stage 1 - Install dependencies and build
-FROM node:20.11.1-alpine AS builder
+# Use official Node image (non-latest tag)
+FROM node:20-alpine
+
 WORKDIR /app
+
+# Create non-root user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Install dependencies
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --only=production
+
+# Copy app source
 COPY . .
-RUN npm run build
 
-# Stage 2 - Production image, run as non-root
-FROM node:20.11.1-alpine
+# Change ownership
+RUN chown -R appuser:appgroup /app
 
-WORKDIR /app
+# Switch to non-root user
+USER appuser
 
-RUN addgroup -S nodegroup && adduser -S nodeuser -G nodegroup
-
-COPY --from=builder /app ./
-
+# Expose app port
 EXPOSE 3000
 
-# ✅ Required for Checkov
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+# Healthcheck (required for CKV_DOCKER_2)
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
 
-USER nodeuser
-
+# Start application
 CMD ["npm", "start"]
