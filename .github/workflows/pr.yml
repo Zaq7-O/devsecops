@@ -1,14 +1,15 @@
 name: PR Workflow
 
-permissions:
-  pull_request:
-    types: [opened, synchronize, reopened]
-
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
   push:
     branches:
       - main
+
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   terraform-checks:
@@ -43,7 +44,7 @@ jobs:
       - name: Lint Dockerfile with hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: ./app/Dockerfile
+          dockerfile: app/Dockerfile
 
   docker-build-and-scan:
     runs-on: ubuntu-latest
@@ -70,9 +71,6 @@ jobs:
         with:
           scan-type: fs
           scan-ref: ./app
-
-# ===== Option 1: skip gitleaks entirely =====
-# secret-detection job removed to avoid pull_request_target issue
 
   docker-compose-test:
     runs-on: ubuntu-latest
@@ -106,6 +104,4 @@ jobs:
         run: |
           docker stop app || true
           docker rm app || true
-
-# ===== Infracost skipped since no API key =====
-# infracost job removed
+          
