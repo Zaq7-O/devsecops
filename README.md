@@ -1,3 +1,37 @@
+## Validation & Security Scanning
+
+All Terraform code is validated and scanned locally before submission. No resources are ever provisioned.
+
+### Validation & Linting
+
+Run these commands in the terraform directory:
+
+```sh
+terraform init -backend=false
+terraform fmt -check
+terraform validate
+tflint
+```
+
+### Security Scanning
+
+Run these commands in the terraform directory:
+
+```sh
+tfsec .
+checkov -d .
+```
+
+#### Justifications for Skipped Findings
+
+- **Public ALB (aws-elb-alb-not-public, CKV2_AWS_28):**
+  - The Application Load Balancer is intentionally public to serve internet-facing traffic for the application tier. This is required by the challenge and documented inline with `tfsec:ignore` and `checkov:skip` comments.
+- **Public Subnets (aws-ec2-no-public-ip-subnet, CKV_AWS_130):**
+  - Public subnets are required for the ALB and NAT Gateway. Justified with inline ignore comments.
+- **VPC Flow Logs:**
+  - VPC Flow Logs are enabled for auditing and security best practice.
+
+All other findings are reviewed and addressed. No critical or high issues remain unaddressed.
 # Three-Tier AWS Architecture (Terraform + ECS + RDS)
 
 ## Overview
