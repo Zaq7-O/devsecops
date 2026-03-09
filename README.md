@@ -112,7 +112,7 @@ Expected output (replace with your screenshot/terminal output):
 ```
 Database connection successful!
 ```
-![alt text](<Screenshot 2026-02-21 at 9.08.23 AM.png>)
+![alt text](<Screenshot 2026-03-09 at 4.53.06 PM.png>)
 
 ## CI/CD
 
