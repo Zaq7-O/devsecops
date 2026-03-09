@@ -78,6 +78,7 @@ module "vpc" {
 
 
 resource "aws_s3_bucket" "alb_logs" {
+  # checkov:skip=CKV_AWS_144: Cross-region replication not required for demo logs.
   bucket = "${var.environment}-alb-logs"
   tags = {
     ManagedBy = "Terraform"

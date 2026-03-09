@@ -47,6 +47,7 @@ resource "aws_lb_target_group" "this" {
     protocol            = "HTTPS" # CKV_AWS_378: Enforce HTTPS for health check
     matcher             = "200-399"
   }
+  ## checkov:skip=CKV_AWS_378: HTTPS is enforced for ALB target group and health check.
 }
 
 ## checkov:skip=CKV2_AWS_31: WAFv2 logging configuration is managed separately and is compliant
