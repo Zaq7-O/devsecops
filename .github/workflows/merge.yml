@@ -78,12 +78,14 @@ jobs:
 
   docker-compose-test:
     runs-on: ubuntu-latest
+    env:
+      CI_DB_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'ci-test-db-password' }}
     services:
       db:
         image: postgres:15.4
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'ci-test-db-password' }}
           POSTGRES_DB: appdb
         ports:
           - 5432:5432
@@ -94,7 +96,7 @@ jobs:
       - name: Build and start app
         run: |
           docker build -t app-image ./app
-          docker run -d --name app --network host -e DB_HOST=localhost -e DB_USER=postgres -e DB_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} -e DB_NAME=appdb -e DB_PORT=5432 -p 3000:3000 app-image
+          docker run -d --name app --network host -e DB_HOST=localhost -e DB_USER=postgres -e DB_PASSWORD=${{ env.CI_DB_PASSWORD }} -e DB_NAME=appdb -e DB_PORT=5432 -p 3000:3000 app-image
       - name: Wait for app
         run: |
           for i in {1..10}; do curl -f http://localhost:3000/api/db-check && break || sleep 3; done
