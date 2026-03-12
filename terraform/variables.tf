@@ -51,17 +51,20 @@ variable "db_name" {
 variable "db_username" {
   type = string
   description = "Database username."
+  default = "postgres"
 }
 
 variable "db_password" {
   type      = string
   sensitive = true
   description = "Database password."
+  default   = "changeme"
 }
 
 variable "performance_insights_kms_key_id" {
   type        = string
   description = "KMS key ARN for encrypting RDS Performance Insights."
+  default     = ""
 }
 
 variable "private_subnet_cidr" {
