@@ -1,50 +1,3 @@
-module "networking" {
-  source               = "./modules/networking"
-  vpc_id               = var.vpc_id
-  environment          = var.environment
-  rds_cidr             = var.private_subnet_cidr
-  s3_vpc_endpoint_cidr = var.s3_vpc_endpoint_cidr
-}
-
-module "alb" {
-  source = "./modules/alb"
-
-  environment           = var.environment
-  subnet_ids            = var.public_subnet_ids
-  alb_security_group_id = module.networking.alb_sg_id
-  alb_logs_bucket       = aws_s3_bucket.alb_logs.bucket
-  vpc_id                = module.networking.vpc_id
-}
-
-module "database" {
-  source                          = "./modules/database"
-  subnet_ids                      = var.private_subnet_ids
-  rds_security_group_id           = module.networking.rds_sg_id
-  environment                     = var.environment
-  db_name                         = var.db_name
-  db_username                     = var.db_username
-  db_password                     = var.db_password
-  performance_insights_kms_key_id = var.performance_insights_kms_key_id
-}
-
-module "ecs" {
-  source = "./modules/ecs"
-
-  cluster_name       = "${var.environment}-cluster"
-  execution_role_arn = aws_iam_role.ecs_execution.arn
-  container_image    = var.container_image
-  region             = var.region
-
-  subnet_ids            = var.private_subnet_ids
-  security_group_id     = module.networking.ecs_sg_id
-  target_group_arn      = module.alb.target_group_arn
-  ecs_security_group_id = module.networking.ecs_sg_id
-  db_host               = module.database.rds_endpoint
-  db_name               = var.db_name
-  db_username           = var.db_username
-  db_secret_arn         = module.database.rds_secret_arn
-}
-
 resource "aws_iam_role" "ecs_execution" {
   name = "${var.environment}-ecs-execution-role"
 
@@ -58,15 +11,74 @@ resource "aws_iam_role" "ecs_execution" {
       Action = "sts:AssumeRole"
     }]
   })
+
+  tags = {
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+  }
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_execution" {
-  role       = aws_iam_role.ecs_execution.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+
+module "networking" {
+  source               = "./modules/networking"
+  vpc_id               = module.vpc.vpc_id
+  environment          = var.environment
+  rds_cidr             = var.private_subnet_cidr
+  s3_vpc_endpoint_cidr = var.s3_vpc_endpoint_cidr
 }
 
-## checkov:skip=CKV_AWS_144: Cross-region replication not required for ALB logs bucket in this environment.
+module "alb" {
+  source = "./modules/alb"
+  environment           = var.environment
+  subnet_ids            = module.vpc.public_subnets
+  alb_logs_bucket       = aws_s3_bucket.alb_logs.bucket
+  vpc_id                = module.vpc.vpc_id
+  alb_security_group_id = module.networking.alb_sg_id
+  waf_logs_destination_arn = "arn:aws:logs:us-east-1:123456789012:log-group:waf-logs" # TODO: Replace with your actual log destination ARN
+}
+
+module "database" {
+  source                          = "./modules/database"
+  subnet_ids                      = module.vpc.database_subnets
+  rds_security_group_id           = module.networking.rds_sg_id
+  environment                     = var.environment
+  db_name                         = var.db_name
+  db_username                     = var.db_username
+  db_password                     = var.db_password
+  performance_insights_kms_key_id = var.performance_insights_kms_key_id
+  rds_rotation_lambda_arn         = "arn:aws:lambda:us-east-1:123456789012:function:rds-rotation-lambda" # TODO: Replace with your actual Lambda ARN
+}
+
+module "ecs" {
+  source = "./modules/ecs"
+  cluster_name       = "${var.environment}-cluster"
+  execution_role_arn = aws_iam_role.ecs_execution.arn
+  container_image    = var.container_image
+  region             = var.region
+  subnet_ids            = module.vpc.private_subnets
+  security_group_id     = module.networking.ecs_sg_id
+  target_group_arn      = module.alb.target_group_arn
+  ecs_security_group_id = module.networking.ecs_sg_id
+  db_host               = module.database.rds_endpoint
+  db_name               = var.db_name
+  db_username           = var.db_username
+  db_secret_arn         = module.database.rds_secret_arn
+}
+module "vpc" {
+  source = "../../terraform-aws/modules/vpc"
+  name   = var.environment
+  cidr   = var.vpc_cidr
+  azs    = var.azs
+  public_subnets  = var.public_subnets
+  private_subnets = var.private_subnets
+  database_subnets = var.database_subnets
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+}
+
+
 resource "aws_s3_bucket" "alb_logs" {
+  # checkov:skip=CKV_AWS_144: Cross-region replication not required for demo logs.
   bucket = "${var.environment}-alb-logs"
   tags = {
     ManagedBy = "Terraform"

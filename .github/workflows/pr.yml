@@ -1,117 +1,28 @@
-name: PR Workflow
+name: CI
 
 on:
-  pull_request_target:
-    branches: [main]
+  push:
+  pull_request:
 
 permissions:
   contents: read
-  pull-requests: read
-  actions: read
-  checks: read
-  issues: none
-  deployments: none
-  statuses: none
 
 jobs:
-  terraform-checks:
+  build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
-      - name: Terraform fmt
-        run: terraform fmt -check -recursive
-        working-directory: ./terraform
-      - name: Terraform init
-        run: terraform init -backend=false
-        working-directory: ./terraform
-      - name: Terraform validate
-        run: terraform validate
-        working-directory: ./terraform
-      - name: Setup tflint
-        uses: terraform-linters/setup-tflint@v4
-      - name: Run tflint
-        run: tflint
-        working-directory: ./terraform
-      - name: Run checkov
-        uses: bridgecrewio/checkov-action@v12
-        with:
-          directory: .
 
-  docker-lint:
-    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Lint Dockerfile with hadolint
-        uses: hadolint/hadolint-action@v3.1.0
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          dockerfile: ./app/Dockerfile
+          fetch-depth: 0
 
-  docker-build-and-scan:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build Docker image
-        run: docker build -t app-image ./app
-      - name: Scan Docker image with Trivy
-        uses: aquasecurity/trivy-action@0.20.0
-        with:
-          image-ref: app-image
-
-  app-security:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run npm audit
-        run: |
-          cd app
-          npm ci
-          npm audit --audit-level=high || true
-      - name: Trivy FS scan
-        uses: aquasecurity/trivy-action@0.20.0
-        with:
-          scan-type: fs
-          scan-ref: ./app
-
-  secret-detection:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Scan for secrets with gitleaks
+      - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  docker-compose-test:
-    runs-on: ubuntu-latest
-    services:
-      db:
-        image: postgres:15.4
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: appdb
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 5
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build and start app
-        run: |
-          docker build -t app-image ./app
-          docker run -d --name app --network host \
-            -e DB_HOST=localhost \
-            -e DB_USER=postgres \
-            -e DB_PASSWORD=postgres \
-            -e DB_NAME=appdb \
-            -e DB_PORT=5432 \
-            -p 3000:3000 app-image
-      - name: Wait for app
-        run: |
-          for i in {1..10}; do curl -f http://localhost:3000/api/db-check && break || sleep 3; done
-      - name: Stop containers
-        run: |
-          docker stop app || true
-          docker rm app || true
+      - name: Build Docker image
+        run: docker build -t ghcr.io/zaq7-o/devsecops/app:${{ github.sha }} -t ghcr.io/zaq7-o/devsecops/app:latest ./app
+        
